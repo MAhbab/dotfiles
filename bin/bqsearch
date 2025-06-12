@@ -1,0 +1,50 @@
+#!/bin/bash
+
+BQ_PROJECT=$(gcloud config get-value project)
+CACHE_DIR="${HOME}/.cache/bq"
+CACHE="${CACHE_DIR}/${BQ_PROJECT}.json"
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+[[ -d "$CACHE_DIR" ]] || mkdir -p "$CACHE_DIR"
+
+if [[ ! -f "$CACHE" ]]; then
+	echo "Caching tables in $BQ_PROJECT (this may take a while)..."
+	python3 "$DOTFILES_DIR"/scripts/bigquery/refresh.py refresh -o "$CACHE"
+fi
+
+check_tools() {
+  for tool in bq fzf jq; do
+    if ! command -v "$tool" &>/dev/null; then
+      echo "Error: '$tool' is not installed."
+      exit 1
+    fi
+  done
+}
+
+main() {
+  check_tools
+	while true; do
+	  selection=$(jq -r '
+	    to_entries[] | 
+	    .key as $ds | 
+	    .value | 
+	    to_entries[] | 
+	    "\($ds).\(.key)"
+	  ' "$CACHE" | fzf \
+	    --prompt="Select table in $BQ_PROJECT: " \
+	    --header="ENTER: view table metadata" \
+	    --height=90% --border)
+
+	  [[ -z "$selection" ]] && break
+
+	  dataset=$(cut -d. -f1 <<< "$selection")
+	  table=$(cut -d. -f2 <<< "$selection")
+
+	  echo -e "\n\033[1m$dataset.$table schema:\033[0m"
+	  jq -r ".\"$dataset\".\"$table\"[] | [.name, .type] | @tsv" "$CACHE" | column -t
+	  echo -e "\nPress any key to continue or Ctrl+C to exit..."
+	  read -r -n1
+	done
+}
+
+main

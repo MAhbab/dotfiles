@@ -1,0 +1,8 @@
+alias python="python3"
+alias vim="nvim"
+alias pip="pip3"
+alias activate-pyenv="source ~/.venvs/mono/bin/activate"
+
+# replay functionality
+alias replay-cmd="rcmd"
+alias replay-cd="rcd"

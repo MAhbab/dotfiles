@@ -1,0 +1,51 @@
+#!/bin/bash
+set -e
+
+SCRIPT_DIR="$DOTFILES/scripts/awk"
+
+show_usage() {
+  echo "Usage: gawk-tools <command> [args...]"
+  echo ""
+  echo "Commands:"
+  for f in "$SCRIPT_DIR"/*.awk; do
+    cmd=$(basename "$f" .awk)
+    usage_line=$(grep -m 1 '^# Usage:' "$f" | sed 's/^# Usage: //')
+    printf "  %-20s %s\n" "$cmd" "$usage_line"
+  done
+  exit 1
+}
+
+show_command_help() {
+  local cmd="$1"
+  local script="$SCRIPT_DIR/$cmd.awk"
+  if [[ ! -f "$script" ]]; then
+    echo "Unknown command: $cmd"
+    exit 1
+  fi
+
+  grep '^# ' "$script" | sed 's/^# //'
+  exit 0
+}
+
+if [[ $# -lt 1 ]]; then
+  show_usage
+fi
+
+if [[ "$1" == "help" ]]; then
+  if [[ -z "$2" ]]; then
+    show_usage
+  else
+    show_command_help "$2"
+  fi
+fi
+
+COMMAND="$1"
+shift
+SCRIPT="$SCRIPT_DIR/$COMMAND.awk"
+
+if [[ -f "$SCRIPT" ]]; then
+  gawk -f "$SCRIPT" "$@"
+else
+  echo "Unknown command: $COMMAND"
+  show_usage
+fi
