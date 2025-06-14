@@ -30,3 +30,6 @@ export FZF_DEFAULT_OPTS='--bind=alt-n:preview-down,alt-p:preview-up'
 
 # zsh command logger
 [[ -f ~/dotfiles/functions/zsh_command_logger.zsh ]] && source ~/dotfiles/functions/zsh_command_logger.zsh
+
+# color
+PROMPT='%F{green}%n@%m %F{blue}%~%f $ '

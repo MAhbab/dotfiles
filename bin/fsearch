@@ -1,0 +1,58 @@
+#!/bin/zsh
+
+LOCATION="$HOME/Tmp"
+
+check_tools() {
+  local required_tools=("fzf")
+  if [[ "$TYPE" == "csv" ]]; then
+    required_tools+=("csvlens")
+  elif [[ "$TYPE" == "json" ]]; then
+    required_tools+=("jless")
+  fi
+
+  for tool in "${required_tools[@]}"; do
+    if ! command -v "$tool" &>/dev/null; then
+      echo "Error: '$tool' is not installed."
+      exit 1
+    fi
+  done
+}
+
+main() {
+  if [[ ! -d "$LOCATION" ]]; then
+    mkdir -p "$LOCATION"
+  fi
+
+  case "$1" in
+    csv|json)
+      TYPE="$1"
+      ;;
+    *)
+      echo "Usage: fsearch [csv|json]"
+      exit 1
+      ;;
+  esac
+
+  check_tools
+
+  while true; do
+    FILES=$(find "$LOCATION" -type f -name "*.${TYPE}" | xargs stat -f "%a,%N" | sort -nr)
+    CHOSEN_FILE=$(echo "$FILES" | cut -d "," -f 2 | fzf \
+      --reverse \
+      --prompt="$(echo "$TYPE" | tr '[:lower:]' '[:upper:]') File: " \
+      --header="ENTER: view file, ESC: quit")
+
+    [[ -z "$CHOSEN_FILE" ]] && break
+
+    touch -a "$CHOSEN_FILE"
+    case "$TYPE" in
+      csv) csvlens "$CHOSEN_FILE" ;;
+      json) jless "$CHOSEN_FILE" ;;
+    esac
+
+    echo -e "\nPress any key to view another file or Ctrl+C to exit..."
+    read -k
+  done
+}
+
+main "$@"
