@@ -11,7 +11,11 @@ def get_default_project():
 def fetch_columns(client, project_id, dataset_id, table_id):
     """Fetch column names for a given table."""
     table_ref = client.get_table(f"{project_id}.{dataset_id}.{table_id}")
-    return [{"name": field.name, "type": field.field_type, 'mode': field.mode} for field in table_ref.schema]
+    table_type = table_ref.table_type
+    return {
+            'fields': [{"name": field.name, "type": field.field_type, 'mode': field.mode} for field in table_ref.schema],
+            'table_type': table_type
+        }
 
 def fetch_tables(client, project_id, dataset_id):
     """Fetch tables and their columns for a given dataset."""
