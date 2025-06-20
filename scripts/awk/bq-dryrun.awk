@@ -1,4 +1,4 @@
-# Usage: gawk-tools bq-dryrun <string>
+# Usage: bq-dryrun <string>
 # Convert output from "bq query --dry_run" to GB
 
 {

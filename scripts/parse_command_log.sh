@@ -6,7 +6,7 @@ get_recent_log_entries() {
   local logfile="${1:-$HOME/.zsh_command_log}"
   local max_lines="${2:-5000}"
   local exit_only="${3:-true}"
-  local blacklist='(rm -rf|gcloud secrets|ssh-keygen|replaylog|^cd )'
+  local blacklist='(rm -rf|gcloud secrets|ssh-keygen|replaylog|qsearch|^cd )'
 
   local recent
   if [[ "$exit_only" == "true" ]]; then
@@ -18,9 +18,9 @@ get_recent_log_entries() {
   echo "$recent" | \
     grep -Ev "$blacklist" | \
     tail -r | \
-    awk -F' \\+\\+ ' '
+    awk -F' === ' '
       {
-        key = $2 " ++ " $3
+        key = $2 " === " $3
         if (!(key in seen)) {
           seen[key] = 1
           lines[++count] = $0

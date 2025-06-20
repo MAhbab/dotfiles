@@ -11,5 +11,5 @@ precmd() {
   local timestamp="$LAST_COMMAND_START_TIME"
   local dir="$LAST_COMMAND_PWD"
   local cmd="$LAST_COMMAND"
-  echo "$timestamp ++ $dir ++ $cmd ++ exit=$exit_status" >> "$LOGFILE"
+  echo "$timestamp === $dir === $cmd === exit=$exit_status" >> "$LOGFILE"
 }
