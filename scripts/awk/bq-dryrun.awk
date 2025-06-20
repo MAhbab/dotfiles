@@ -8,6 +8,6 @@
     gb = bytes / 1e9
     printf("%.2f GB\n", gb)
   } else {
-    print "No byte size found"
+    print $0
   }
 }
