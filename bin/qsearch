@@ -1,4 +1,6 @@
 queries=$(awk -F'\\+\\+' '{print $3}' ~/.zsh_command_log|grep -E --color=always "^ bq query" | cut -d'"' -f2 | awktua dedupe)
 
-selected_query = $(echo "$queries" | fzf --preview-window=up --reverse --preview='echo {} | sql-formatter --language bigquery | bat -l sql --wrap=never && echo {} | bq query --dry_run | awktua bq-dryrun | bat --wrap=never')
+selected_query = $(echo "$queries" | \
+	fzf --preview-window=up --reverse --expect=enter,ctrl-v \
+	--preview='echo {} | sql-formatter --language bigquery | bat -l sql --wrap=never && echo {} | bq query --dry_run | awktua bq-dryrun | bat --wrap=never')
 
