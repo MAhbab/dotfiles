@@ -48,7 +48,7 @@ main() {
     case "$key" in
       enter)
         echo -e "\n\033[1m$dataset.$table schema:\033[0m"
-        jq -r ".\"$dataset\".\"$table\".fields[] | [.name, .type] | @tsv" "$CACHE" | column -t
+        jq -r ".\"$dataset\".\"$table\".[] | [.name, .type] | @tsv" "$CACHE" | column -t
         echo -e "\nPress any key to continue or Ctrl+C to exit..."
         read -r -n1
         ;;
@@ -58,7 +58,7 @@ main() {
         if [[ "$table_type" == "VIEW" ]]; then
           bq show --view "$BQ_PROJECT:$dataset.$table" | bat -l sql
         else
-          bq head --format=csv "$BQ_PROJECT:$dataset.$table" | csvlens
+          bq head --format=csv "$BQ_PROJECT:$dataset.$table" | csvlens --prompt "$BQ_PROJECT:$dataset.$table"
         fi
         echo -e "\nPress any key to continue or Ctrl+C to exit..."
         read -r -n1
