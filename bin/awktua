@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+#set -e
 
 SCRIPT_DIR="$DOTFILES/scripts/awk"
 
@@ -44,7 +44,13 @@ shift
 SCRIPT="$SCRIPT_DIR/$COMMAND.awk"
 
 if [[ -f "$SCRIPT" ]]; then
-  gawk -f "$SCRIPT" "$@"
+  if [[ -n "$2" ]] || ! [ -t 0 ]; then
+    arg="$1"
+    shift
+    gawk -v arg="$arg" -f "$SCRIPT" "$@"
+  else
+    gawk -f "$SCRIPT" "$@"
+  fi
 else
   echo "Unknown command: $COMMAND"
   show_usage
