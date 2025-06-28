@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# commit_explorer_subset.sh
+#
+# Browse *specific* commits and drill down into file-level diffs.
+# Accepts commit hashes as positional args or from stdin.
+
+set -euo pipefail
+
+#── Verify we’re inside a repo ────────────────────────────────────────────────
+if ! git rev-parse --is-inside-work-tree &>/dev/null; then
+  echo "Error: not inside a Git repository." >&2
+  exit 1
+fi
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+#── Collect commit IDs ────────────────────────────────────────────────────────
+declare -a COMMITS
+
+if [[ $# -gt 0 ]]; then
+  COMMITS=("$@")                    # from positional args
+else
+  while IFS= read -r line; do       # portable stdin read
+    COMMITS+=("$line")
+  done
+fi
+
+if [[ ${#COMMITS[@]} -eq 0 ]]; then
+  cat <<EOF
+Usage:
+  $0 <commit1> [commit2 ...]      # pass hashes directly
+  some_command | $0               # or pipe hashes into the script
+EOF
+  exit 1
+fi
+
+#── Validate commit IDs and build display lines ──────────────────────────────
+declare -a LINES
+for c in "${COMMITS[@]}"; do
+  if git cat-file -e "${c}^{commit}" 2>/dev/null; then
+    line=$(git log -1 --date=short --pretty='%h %ad %an %s' "$c")
+    LINES+=("$line")
+  else
+    echo "Warning: '$c' is not a valid commit; skipping." >&2
+  fi
+done
+
+if [[ ${#LINES[@]} -eq 0 ]]; then
+  echo "No valid commit hashes supplied." >&2
+  exit 1
+fi
+
+#── Interactive commit-then-file picker ───────────────────────────────────────
+COMMIT=$(
+  printf '%s\n' "${LINES[@]}" |
+  fzf --reverse \
+      --prompt="Choose commit> " \
+      --preview='git diff-tree --no-commit-id --name-only $(echo {} | awk "{print \$1}") -r' |
+  awk '{print $1}'
+)
+
+[[ -z $COMMIT ]] && exit 0   # user cancelled
+
+FILE_SELECTION=$(
+  git -C "$REPO_ROOT" diff-tree --no-commit-id --name-only "$COMMIT" -r |
+  fzf --reverse \
+      --prompt="Choose file> " \
+      --preview="git -C $REPO_ROOT show --color=always $COMMIT -- {}"
+)
+
+[[ -z $FILE_SELECTION ]] && exit 0   # user cancelled
+
+git -C "$REPO_ROOT" show --color=always "$COMMIT" -- "$FILE_SELECTION"

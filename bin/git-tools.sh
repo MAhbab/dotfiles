@@ -28,18 +28,7 @@ if [[ "${1:-}" == "--help" ]]; then
   echo
   echo "Usage:"
   echo "  .$0           # Browse commits and drill into individual file diffs"
-  echo "  .$0 --full-diff  # Preview full commit diffs without file selection"
   echo
-  exit 0
-fi
-
-# Handle full diff mode
-if [[ "${1:-}" == "--full-diff" ]]; then
-  git log --date=short --pretty=' %h %ad %an %s' -n 80 | \
-    fzf --preview 'git show --color=always $(echo {} | awk "{ print \$1 }")' | \
-    awk '{ print $1 }' | \
-    xargs git show --color=always | \
-    less -R
   exit 0
 fi
 
