@@ -34,8 +34,10 @@ map('n', '<Leader>K', vim.diagnostic.open_float, { desc = 'Show diagnostics in f
 local find_by_field = require('user.obsidian.find_by_field')
 local insert_link = require('user.obsidian.insert_link')
 
-map('n', '<Leader>of', function() find_by_field.pick_field_value('role') end, {desc = 'Find note by role'})
-map('n', '<Leader>oi', function() insert_link.insert_note_link() end, {desc = 'Insert link'})
+map('n', '<Leader>of', function() find_by_field.pick_field_key() end, {desc = 'Find note by role', noremap = true})
+map('n', '<Leader>oi', function() insert_link.insert_note_link() end, {desc = 'Insert link', noremap = true})
+map('n', '<Leader>on', ':ObsidianNew<CR>', {desc = 'Open new note', noremap = true})
+map('n', '<Leader>ot', ':ObsidianTemplate<CR>', {desc = 'Insert Obsidian template', noremap = true})
 
 map("i", "<C-Space>", function()
   require("cmp").complete()

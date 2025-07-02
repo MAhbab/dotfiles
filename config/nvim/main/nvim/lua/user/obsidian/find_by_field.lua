@@ -28,13 +28,75 @@ local function collect_field_values(field)
   local values = {}
   for _, path in ipairs(get_all_note_paths()) do
     local fm = extract_frontmatter(path)
-    local field_value = fm and fm[field]
-    if type(field_value) == "string" then
-      values[field_value] = values[field_value] or {}
-      table.insert(values[field_value], path)
+    if fm then
+      local field_value = fm[field]
+      local value_type = type(field_value)
+
+      if value_type == "string" or value_type == "number" or value_type == "boolean" then
+        local key = tostring(field_value)
+        values[key] = values[key] or {}
+        table.insert(values[key], path)
+      elseif value_type == "table" then
+        for _, item in ipairs(field_value) do
+          local item_type = type(item)
+          if item_type == "string" or item_type == "number" or item_type == "boolean" then
+            local key = tostring(item)
+            values[key] = values[key] or {}
+            table.insert(values[key], path)
+          end
+        end
+      end
     end
   end
   return values
+end
+
+local function collect_all_field_keys()
+  local keys = {}
+  for _, path in ipairs(get_all_note_paths()) do
+    local fm = extract_frontmatter(path)
+    if fm then
+      for key, _ in pairs(fm) do
+        keys[key] = true
+      end
+    end
+  end
+
+  local key_list = {}
+  for key, _ in pairs(keys) do
+    table.insert(key_list, key)
+  end
+  table.sort(key_list)
+  return key_list
+end
+
+function M.pick_field_key()
+  local keys = collect_all_field_keys()
+
+  if #keys == 0 then
+    vim.notify("No frontmatter fields found in vault", vim.log.levels.WARN)
+    return
+  end
+
+  pickers.new({}, {
+    prompt_title = "Select Field to Search By",
+    finder = finders.new_table { results = keys },
+    sorter = conf.generic_sorter({}),
+    attach_mappings = function(prompt_bufnr, _)
+      actions.select_default:replace(function()
+        local entry = action_state.get_selected_entry()
+        if not entry then return end
+        local field = entry.value
+        actions.close(prompt_bufnr)
+
+        -- Defer the call to avoid issues with Telescope state
+        vim.schedule(function()
+          M.pick_field_value(field)
+        end)
+      end)
+      return true
+    end,
+  }):find()
 end
 
 function M.pick_field_value(field)
