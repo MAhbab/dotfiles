@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import google.auth
 import click
+from tqdm import tqdm
 
 def get_default_project():
     _, project_id = google.auth.default()
@@ -20,14 +21,14 @@ def fetch_columns(client, project_id, dataset_id, table_id):
 def fetch_tables(client, project_id, dataset_id):
     """Fetch tables and their columns for a given dataset."""
     tables_info = {}
-    tables = client.list_tables(dataset_id)
+    tables = list(client.list_tables(dataset_id))
 
     with ThreadPoolExecutor(max_workers=4) as executor:
         futures = {
             executor.submit(fetch_columns, client, project_id, dataset_id, table.table_id): table.table_id
             for table in tables
         }
-        for future in as_completed(futures):
+        for future in tqdm(as_completed(futures), total=len(futures), desc=f"Fetching tables for {dataset_id}", leave=False):
             table_id = futures[future]
             tables_info[table_id] = future.result()
 
@@ -42,14 +43,14 @@ def get_bq_project_structure(project_id):
     project_structure = {}
 
     # Get all datasets in the project
-    datasets = client.list_datasets()
+    datasets = list(client.list_datasets())
 
     with ThreadPoolExecutor(max_workers=4) as executor:
         futures = {
             executor.submit(fetch_tables, client, project_id, dataset.dataset_id): dataset.dataset_id
             for dataset in datasets
         }
-        for future in as_completed(futures):
+        for future in tqdm(as_completed(futures), total=len(futures), desc="Fetching datasets"):
             dataset_id = futures[future]
             project_structure[dataset_id] = future.result()
 
@@ -66,16 +67,17 @@ def search_bq_structure(structure, substring):
             local_results.append(('TABLE', f"{dataset_id}.{table_id}"))
         # Search in column names
         for column in columns:
-            if substring.lower() in column.lower():
-                local_results.append(('COLUMN', f"{dataset_id}.{table_id}.{column}"))
+            if substring.lower() in column['name'].lower():
+                local_results.append(('COLUMN', f"{dataset_id}.{table_id}.{column['name']}"))
         return local_results
 
     def search_dataset(dataset_id, tables):
         local_results = []
         with ThreadPoolExecutor() as executor:
+            # tables is a dict of table_id -> {'fields': [...], 'table_type': ...}
             futures = {
-                executor.submit(search_table_columns, dataset_id, table_id, columns): table_id
-                for table_id, columns in tables.items()
+                executor.submit(search_table_columns, dataset_id, table_id, table_data['fields']): table_id
+                for table_id, table_data in tables.items()
             }
             for future in as_completed(futures):
                 local_results.extend(future.result())
@@ -86,7 +88,7 @@ def search_bq_structure(structure, substring):
             executor.submit(search_dataset, dataset_id, tables): dataset_id
             for dataset_id, tables in structure.items()
         }
-        for future in as_completed(futures):
+        for future in tqdm(as_completed(futures), total=len(futures), desc="Searching"):
             results.extend(future.result())
 
     return results
@@ -103,7 +105,8 @@ def refresh(output=None, project_id=None):
         project_id = get_default_project()
     bq_structure = get_bq_project_structure(project_id)
     if output is not None:
-        json.dump(bq_structure, open(output, 'w'))
+        with open(output, 'w') as f:
+            json.dump(bq_structure, f)
         click.echo(f"project structure of {project_id} saved to {output}")
     else:
         click.echo(json.dumps(bq_structure))
@@ -111,12 +114,24 @@ def refresh(output=None, project_id=None):
 @cli.command()
 @click.argument('search_term')
 @click.option('-o', '--output', default=None, help='Output file path. Must be json format. If not provided, will print to stdout.')
-def search(search_term, output=None):
+@click.option('--cache-file', default='/tmp/bq_structure.json', help='Cache file for BQ structure')
+def search(search_term, output=None, cache_file=None):
     project_id = get_default_project()
-    bq_structure = get_bq_project_structure(project_id)
+    
+    try:
+        with open(cache_file, 'r') as f:
+            click.echo(f"using cache file {cache_file}")
+            bq_structure = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        click.echo("cache file not found, refreshing...")
+        bq_structure = get_bq_project_structure(project_id)
+        with open(cache_file, 'w') as f:
+            json.dump(bq_structure, f)
+
     search_results = search_bq_structure(bq_structure, search_term)
     if output is not None:
-        json.dump(search_results, open(output, 'w'))
+        with open(output, 'w') as f:
+            json.dump(search_results, f)
         click.echo(f"search results saved to {output}")
     else:
         click.echo(json.dumps(search_results))

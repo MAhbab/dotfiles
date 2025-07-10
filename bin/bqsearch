@@ -33,9 +33,9 @@ main() {
       "\($ds).\(.key)"
     ' "$CACHE" | fzf \
       --prompt="Select table in $BQ_PROJECT: " \
-      --header="ENTER: show schema | Ctrl-R: preview table or view" \
+      --header="ENTER: show schema | Ctrl-p: preview table or view | Ctrl-r: reset cache" \
       --height=90% --border \
-      --expect=enter,ctrl-r)
+      --expect=enter,ctrl-p,ctrl-r)
 
     key=$(echo "$selection" | head -n1)
     selected=$(echo "$selection" | tail -n1)
@@ -52,7 +52,7 @@ main() {
         echo -e "\nPress any key to continue or Ctrl+C to exit..."
         read -r -n1
         ;;
-      ctrl-r)
+      ctrl-p)
         table_type=$(jq -r ".\"$dataset\".\"$table\".table_type" "$CACHE")
         echo -e "\n\033[1m$dataset.$table preview:\033[0m"
         if [[ "$table_type" == "VIEW" ]]; then
@@ -60,6 +60,9 @@ main() {
         else
           bq head --format=csv "$BQ_PROJECT:$dataset.$table" | csvlens --prompt "$BQ_PROJECT:$dataset.$table"
         fi
+	;;
+      ctrl-r) # reset cache
+	python3 "$DOTFILES_DIR"/scripts/bigquery/refresh.py refresh --project-id "$BQ_PROJECT" -o "$CACHE"
         echo -e "\nPress any key to continue or Ctrl+C to exit..."
         read -r -n1
         ;;
