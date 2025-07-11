@@ -60,6 +60,7 @@ main() {
         else
           bq head --format=csv "$BQ_PROJECT:$dataset.$table" | csvlens --prompt "$BQ_PROJECT:$dataset.$table"
         fi
+        read -r -n1
 	;;
       ctrl-r) # reset cache
 	python3 "$DOTFILES_DIR"/scripts/bigquery/refresh.py refresh --project-id "$BQ_PROJECT" -o "$CACHE"
