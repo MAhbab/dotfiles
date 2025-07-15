@@ -40,6 +40,8 @@ map('n', '<Leader>on', ':ObsidianNew<CR>', {desc = 'Open new note', noremap = tr
 map('n', '<Leader>om', ':ObsidianTemplate<CR>', {desc = 'Insert Obsidian template', noremap = true})
 map('n', '<Leader>os', ':ObsidianQuickSwitch<CR>', {desc = 'Open quick switcher', noremap = true})
 map('n', '<Leader>ot', ':ObsidianTags<CR>', {desc = 'Open quick switcher', noremap = true})
+map('n', '<Leader>og', ':ObsidianSearch<CR>', {desc = 'Search notes', noremap = true})
+map('n', '<Leader>oo', ':ObsidianOpen<CR>', {desc = 'Open in Obsidian Desktop', noremap = true})
 map('n', '<leader>od', function()
   local filename = vim.fn.expand('%')
   vim.cmd('bd!')
