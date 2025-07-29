@@ -4,7 +4,7 @@
 SCRIPT_DIR="$DOTFILES/scripts/awk"
 
 show_usage() {
-  echo "Usage: gawk-tools <command> [args...]"
+  echo "Usage: awktua <command> [args...]"
   echo ""
   echo "Commands:"
   for f in "$SCRIPT_DIR"/*.awk; do
@@ -47,9 +47,9 @@ if [[ -f "$SCRIPT" ]]; then
   if [[ -n "$2" ]] || ! [ -t 0 ]; then
     arg="$1"
     shift
-    gawk -v arg="$arg" -f "$SCRIPT" "$@"
+    gawk -F',' -v arg="$arg" -f "$SCRIPT" "$@"
   else
-    gawk -f "$SCRIPT" "$@"
+    gawk -F',' -f "$SCRIPT" "$@"
   fi
 else
   echo "Unknown command: $COMMAND"

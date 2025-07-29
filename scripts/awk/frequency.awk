@@ -1,4 +1,5 @@
 # Default to column 1 if 'col' is unset or invalid
+# Usage: awktua frequency [col] <file>
 BEGIN {
   FS = ","
   arg = (arg == "" || arg < 1) ? 1 : arg

@@ -33,9 +33,9 @@ main() {
       "\($ds).\(.key)"
     ' "$CACHE" | fzf \
       --prompt="Select table in $BQ_PROJECT: " \
-      --header="ENTER: show schema | Ctrl-p: preview table or view | Ctrl-r: reset cache" \
+      --header="ENTER: show schema | Ctrl-t: preview table or view | Ctrl-r: reset cache" \
       --height=90% --border \
-      --expect=enter,ctrl-p,ctrl-r)
+      --expect=enter,ctrl-t,ctrl-r)
 
     key=$(echo "$selection" | head -n1)
     selected=$(echo "$selection" | tail -n1)
@@ -52,7 +52,7 @@ main() {
         echo -e "\nPress any key to continue or Ctrl+C to exit..."
         read -r -n1
         ;;
-      ctrl-p)
+      ctrl-t)
         table_type=$(jq -r ".\"$dataset\".\"$table\".table_type" "$CACHE")
         echo -e "\n\033[1m$dataset.$table preview:\033[0m"
         if [[ "$table_type" == "VIEW" ]]; then
