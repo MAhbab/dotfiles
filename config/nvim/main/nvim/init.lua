@@ -45,6 +45,7 @@ require("user.obsidian.find_by_field")
 require("user.obsidian.config")
 require("user.obsidian.template_manager")
 require("utils.path")
+require("ftsettings")
 
 -- Reload Module
 P = function(v)
