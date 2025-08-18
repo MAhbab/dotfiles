@@ -6,7 +6,7 @@
   gsub(/\x1b\[[0-9;]*m/, "")
 
   # Skip lines that start with timestamps like "20:37:59"
-  if ($0 ~ /^[0-9][0-9]:[0-9][0-9]:[0-9][0-9]/) {
+  if ($0 ~ /^[0-9][0-9]:[0-9][0-9]:[0-9][0-9]/ || $0 ~ /^Compiled node/) {
     next
   }
 
