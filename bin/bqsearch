@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BQ_PROJECT="${1:-$(gcloud config get-value project 2>/dev/null)}"
+BQ_PROJECT="$(gcloud config get-value project 2>/dev/null)"
 CACHE_DIR="${HOME}/.cache/bq"
 CACHE="${CACHE_DIR}/${BQ_PROJECT}.json"
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -33,6 +33,7 @@ main() {
       "\($ds).\(.key)"
     ' "$CACHE" | fzf \
       --prompt="Select table in $BQ_PROJECT: " \
+      --query="$1" \
       --header="ENTER: show schema | Ctrl-t: preview table or view | Ctrl-r: reset cache" \
       --height=90% --border \
       --expect=enter,ctrl-t,ctrl-r)
@@ -71,4 +72,4 @@ main() {
   done
 }
 
-main
+main "$@"
