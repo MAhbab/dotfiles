@@ -30,12 +30,10 @@ end, { noremap = true, silent = true })
 -- Add lazy.nvim to runtime path
 vim.opt.rtp:prepend("~/.config/nvim/lazy/lazy.nvim")
 
--- Set python3 host
-vim.g.python3_host_prog = "/Users/mahfuj/.venvs/mono/bin/python"
-
 require("lazy").setup("plugins")
 
 -- Load your existing modules
+require("user.env")
 require("completion")
 require("lsp")
 require("mappings")

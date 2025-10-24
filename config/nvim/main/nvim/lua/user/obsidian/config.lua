@@ -2,7 +2,7 @@ require("obsidian").setup({
   workspaces = {
     {
       name = "personal",
-      path = "~/Documents/mindspace/content",
+      path = require("user.env").vault_path,
       overrides = {
         notes_subdir = "logs/thought",
       },

@@ -5,7 +5,7 @@ local Path = require("plenary.path")
 require('user.obsidian.patch')
 local path_utils = require('utils.path')
 
-local vault_root = "/Users/mahfuj/Documents/mindspace/content"
+local vault_root = require("user.env").vault_path
 
 M = {}
 

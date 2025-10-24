@@ -29,7 +29,7 @@ cmp.event:on("confirm_done", function(entry)
     end
 
     -- Convert to relative path
-    local root = "/Users/mahfuj/Documents/mindspace/content/"
+    local root = require("user.env").vault_path .. "/"
     local rel_path = full_path:match(root .. "(.*)")
     if not rel_path then
       print("⚠️ Could not extract relative path")

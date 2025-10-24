@@ -9,7 +9,7 @@ local path_utils = require("utils.path")
 
 local M = {}
 
-local vault_root = vim.fn.expand("~/Documents/mindspace/content")
+local vault_root = require("user.env").vault_path
 
 local function get_all_markdown_files()
   return scan.scan_dir(vault_root, { depth = 5, search_pattern = "%.md$" })

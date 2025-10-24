@@ -13,7 +13,7 @@ local Note = require("obsidian.note")
 local M = {}
 
 -- 🔧 Update to your vault path
-local vault_path = vim.fn.expand("~/Documents/mindspace/content")
+local vault_path = require("user.env").vault_path
 
 local function get_all_note_paths()
   return scan.scan_dir(vault_path, { depth = 5, search_pattern = "%.md$" })

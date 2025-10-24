@@ -6,7 +6,7 @@ local Note = require("obsidian.note")
 local M = {}
 
 -- Configuration
-M.template_base = vim.fn.expand("~/Documents/mindspace/templates")
+M.template_base = require("user.env").vault_path .. "/reference/templates"
 M.prefer_template = false  -- Whether template values override current note
 
 --- Build the path to a template file for a given field and value
