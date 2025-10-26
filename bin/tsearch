@@ -1,19 +1,36 @@
 #!/bin/bash
 VAULT_DIR="$HOME/Documents/mindspace/content"
+SEARCH_TERM="$1"
 
 while true; do
+    files_to_search="$VAULT_DIR"
+    if [ -n "$SEARCH_TERM" ]; then
+        # A search term was provided. Grep for files containing that term.
+        files_to_search=$(grep -lR -- "\- $SEARCH_TERM" "$VAULT_DIR")
+
+        if [ -z "$files_to_search" ]; then
+            echo "No files found containing '$SEARCH_TERM'"
+            break
+        fi
+    fi
+
     # Corrected grep regex to properly find literal brackets
-    INCOMPLETE_TASKS=$(grep -nr -- "- \[ \]" "$VAULT_DIR")
+    # The files_to_search variable is intentionally unquoted to pass the list of files to grep
+    INCOMPLETE_TASKS=$(grep -nr -- "- \[ \]" $files_to_search)
 
     if [ -z "$INCOMPLETE_TASKS" ]; then
-        echo "No more incomplete tasks."
+        # Adjust exit message based on whether a search term was used
+        if [ -n "$SEARCH_TERM" ]; then
+            echo "No incomplete tasks found matching '$SEARCH_TERM'"
+        else
+            echo "No more incomplete tasks."
+        fi
         break
     fi
 
-    # Switched back to a robust method of capturing fzf's output
     FZF_OUTPUT=$( \
         echo "$INCOMPLETE_TASKS" | \
-	fzf --preview-window=wrap --preview "grep -C 5 --color=always '\- \[ \]' \$(echo {} | cut -d ':' -f 1)" \
+        fzf --delimiter : --preview-window=wrap --preview "grep -F -C 10 --color=always -- {3..} {1}" \
                 --header "Press ENTER to open, CTRL-X to complete, ESC to exit" \
                 --expect=ctrl-x \
     )
