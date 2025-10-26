@@ -1,0 +1,39 @@
+#!/bin/bash
+VAULT_DIR="$HOME/Documents/mindspace/content"
+
+while true; do
+    # Corrected grep regex to properly find literal brackets
+    INCOMPLETE_TASKS=$(grep -nr -- "- \[ \]" "$VAULT_DIR")
+
+    if [ -z "$INCOMPLETE_TASKS" ]; then
+        echo "No more incomplete tasks."
+        break
+    fi
+
+    # Switched back to a robust method of capturing fzf's output
+    FZF_OUTPUT=$( \
+        echo "$INCOMPLETE_TASKS" | \
+	fzf --preview-window=wrap --preview "grep -C 5 --color=always '\- \[ \]' \$(echo {} | cut -d ':' -f 1)" \
+                --header "Press ENTER to open, CTRL-X to complete, ESC to exit" \
+                --expect=ctrl-x \
+    )
+
+    if [ -z "$FZF_OUTPUT" ]; then
+        echo "Exiting."
+        break
+    fi
+
+    KEY=$(echo "$FZF_OUTPUT" | head -n 1)
+    SELECTED_TASK_LINE=$(echo "$FZF_OUTPUT" | tail -n 1)
+
+    SELECTED_FILE=$(echo "$SELECTED_TASK_LINE" | cut -d ':' -f 1)
+    SELECTED_LINE_NUM=$(echo "$SELECTED_TASK_LINE" | cut -d ':' -f 2)
+
+    if [ "$KEY" = "ctrl-x" ]; then
+        # Corrected sed regex to properly replace literal brackets
+        sed -i '' "${SELECTED_LINE_NUM}s/- \[ \]/- [x]/" "$SELECTED_FILE"
+    else # Default action (Enter)
+        XDG_CONFIG_HOME="$HOME/dotfiles/config/nvim/main" nvim "$SELECTED_FILE" +"$SELECTED_LINE_NUM"
+        break
+    fi
+done
