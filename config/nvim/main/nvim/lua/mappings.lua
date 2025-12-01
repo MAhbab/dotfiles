@@ -60,4 +60,5 @@ map('n', '<Leader>ml', ':BookmarksList<CR>', {desc = 'Browse bookmark lists', no
 map('n', '<Leader>mg', ':BookmarksGrep<CR>', {desc = 'Grep bookmarks', noremap = true})
 map('n', '<Leader>ms', ':BookmarksGoto<CR>', {desc = 'Select a bookmark from current list', noremap = true})
 map('n', '<Leader>mn', ':BookmarksGotoNextInList<CR>', {desc = 'Go to next bookmark in current list', noremap = true})
-map('n', '<Leader>ms', ':BookmarksGotoPrevInList<CR>', {desc = 'Go to previous bookmark in current list', noremap = true})
+map('n', '<Leader>mp', ':BookmarksGotoPrevInList<CR>', {desc = 'Go to previous bookmark in current list', noremap = true})
+map('n', '<Leader>mi', ':BookmarksInfoCurrentBookmark<CR>', {desc = 'Show info for current bookmark', noremap = true})
