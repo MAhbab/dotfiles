@@ -13,39 +13,40 @@ if ! git rev-parse --is-inside-work-tree &>/dev/null; then
 fi
 REPO_ROOT=$(git rev-parse --show-toplevel)
 
-#── Collect commit IDs ────────────────────────────────────────────────────────
-declare -a COMMITS
-
-if [[ $# -gt 0 ]]; then
-  COMMITS=("$@")                    # from positional args
-else
-  while IFS= read -r line; do       # portable stdin read
-    COMMITS+=("$line")
-  done
-fi
-
-if [[ ${#COMMITS[@]} -eq 0 ]]; then
-  cat <<EOF
-Usage:
-  $0 <commit1> [commit2 ...]      # pass hashes directly
-  some_command | $0               # or pipe hashes into the script
-EOF
-  exit 1
-fi
-
-#── Validate commit IDs and build display lines ──────────────────────────────
+#── Collect and format commits for fzf ───────────────────────────────────────
 declare -a LINES
-for c in "${COMMITS[@]}"; do
-  if git cat-file -e "${c}^{commit}" 2>/dev/null; then
-    line=$(git log -1 --date=short --pretty='%h %ad %an %s' "$c")
+
+# If commit hashes are passed as arguments or piped via stdin, use them.
+# Otherwise, fall back to listing all commits from `git log`.
+if [[ $# -gt 0 ]]; then
+  for c in "$@"; do
+    if git cat-file -e "${c}^{commit}" 2>/dev/null; then
+      line=$(git log -1 --date=short --pretty='%h %ad %an %s' "$c")
+      LINES+=("$line")
+    else
+      echo "Warning: '$c' is not a valid commit; skipping." >&2
+    fi
+  done
+elif ! [[ -t 0 ]]; then
+  while IFS= read -r c; do
+    if [[ -n "$c" ]] && git cat-file -e "${c}^{commit}" 2>/dev/null; then
+      line=$(git log -1 --date=short --pretty='%h %ad %an %s' "$c")
+      LINES+=("$line")
+    else
+      # When reading from a pipe, it might be noisy to warn for every line
+      # that isn't a commit. Silently ignore invalid lines.
+      :
+    fi
+  done
+else
+  # No args and stdin is a TTY, so list all commits.
+  while IFS= read -r line; do
     LINES+=("$line")
-  else
-    echo "Warning: '$c' is not a valid commit; skipping." >&2
-  fi
-done
+  done < <(git log --date=short --pretty='%h %ad %an %s')
+fi
 
 if [[ ${#LINES[@]} -eq 0 ]]; then
-  echo "No valid commit hashes supplied." >&2
+  echo "No commits to display." >&2
   exit 1
 fi
 
