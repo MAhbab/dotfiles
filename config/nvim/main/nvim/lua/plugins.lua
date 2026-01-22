@@ -39,5 +39,12 @@ return {
 	    local opts = {} -- check the "./lua/bookmarks/default-config.lua" file for all the options
 	    require("bookmarks").setup(opts) -- you must call setup to init sqlite db
 	  end,
+	},
+	{
+	  "gruvw/strudel.nvim",
+	  build = "npm ci",
+	  config = function()
+	    require("strudel").setup()
+	  end,
 	}
 }

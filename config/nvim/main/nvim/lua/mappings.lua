@@ -42,7 +42,6 @@ map('n', '<Leader>os', ':ObsidianQuickSwitch<CR>', {desc = 'Search notes by file
 map('n', '<Leader>ot', ':ObsidianTags<CR>', {desc = 'Search notes by tag', noremap = true})
 map('n', '<Leader>og', ':ObsidianSearch<CR>', {desc = 'Search notes by grep', noremap = true})
 map('n', '<Leader>oo', ':ObsidianOpen<CR>', {desc = 'Open in Obsidian Desktop', noremap = true})
-map('n', '<Leader>of', ':ObsidianFollowLink<CR>', {desc = 'Follow internal link', noremap = true})
 map('n', '<leader>od', function()
   local filename = vim.fn.expand('%')
   vim.cmd('bd!')
@@ -62,3 +61,14 @@ map('n', '<Leader>ms', ':BookmarksGoto<CR>', {desc = 'Select a bookmark from cur
 map('n', '<Leader>mn', ':BookmarksGotoNextInList<CR>', {desc = 'Go to next bookmark in current list', noremap = true})
 map('n', '<Leader>mp', ':BookmarksGotoPrevInList<CR>', {desc = 'Go to previous bookmark in current list', noremap = true})
 map('n', '<Leader>mi', ':BookmarksInfoCurrentBookmark<CR>', {desc = 'Show info for current bookmark', noremap = true})
+
+-- Strudel
+local strudel = require("strudel")
+
+map("n", "<leader>sl", strudel.launch, { desc = "Launch Strudel" })
+map("n", "<leader>sq", strudel.quit, { desc = "Quit Strudel" })
+map("n", "<leader>st", strudel.toggle, { desc = "Strudel Toggle Play/Stop" })
+map("n", "<leader>su", strudel.update, { desc = "Strudel Update" })
+map("n", "<leader>ss", strudel.stop, { desc = "Strudel Stop Playback" })
+map("n", "<leader>sb", strudel.set_buffer, { desc = "Strudel set current buffer" })
+map("n", "<leader>sx", strudel.execute, { desc = "Strudel set current buffer and update" })
