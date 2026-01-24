@@ -118,33 +118,40 @@ function M.pick_field_value(field)
     prompt_title = "Select " .. field,
     finder = finders.new_table { results = values },
     sorter = conf.generic_sorter({}),
-    attach_mappings = function(_, _)
+    attach_mappings = function(prompt_bufnr, _)
       actions.select_default:replace(function()
         local entry = action_state.get_selected_entry()
         if not entry then return end
         local selection = entry.value
         local paths = field_map[selection]
+        actions.close(prompt_bufnr)
 
-        vim.schedule(function()
-          pickers.new({}, {
-            prompt_title = selection .. " → Notes",
-            finder = finders.new_table { results = paths },
-            sorter = conf.generic_sorter({}),
-            previewer = previewers.new_termopen_previewer({
-              get_command = function(entry)
-                return { "bat", "--style=plain", "--color=always", entry.value or entry }
+        if #paths == 1 then
+          vim.schedule(function()
+            vim.cmd("edit! " .. paths[1])
+          end)
+        else
+          vim.schedule(function()
+            pickers.new({}, {
+              prompt_title = selection .. " → Notes",
+              finder = finders.new_table { results = paths },
+              sorter = conf.generic_sorter({}),
+              previewer = previewers.new_termopen_previewer({
+                get_command = function(entry)
+                  return { "bat", "--style=plain", "--color=always", entry.value or entry }
+                end,
+              }),
+              attach_mappings = function(_, _)
+                actions.select_default:replace(function()
+                  local file_entry = action_state.get_selected_entry()
+                  if not file_entry then return end
+                  vim.cmd("edit! " .. (file_entry.value or file_entry[1]))
+                end)
+                return true
               end,
-            }),
-            attach_mappings = function(_, _)
-              actions.select_default:replace(function()
-                local file_entry = action_state.get_selected_entry()
-                if not file_entry then return end
-                vim.cmd("edit! " .. (file_entry.value or file_entry[1]))
-              end)
-              return true
-            end,
-          }):find()
-        end)
+            }):find()
+          end)
+        end
       end)
       return true
     end,

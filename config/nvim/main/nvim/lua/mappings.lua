@@ -38,7 +38,7 @@ map('n', '<Leader>of', function() find_by_field.pick_field_key() end, {desc = 'S
 map('n', '<Leader>oi', function() insert_link.insert_note_link() end, {desc = 'Insert link', noremap = true})
 map('n', '<Leader>on', ':ObsidianNew<CR>', {desc = 'Open new note', noremap = true, silent = true})
 map('n', '<Leader>om', ':ObsidianTemplate<CR>', {desc = 'Insert Obsidian template', noremap = true})
-map('n', '<Leader>os', ':ObsidianQuickSwitch<CR>', {desc = 'Search notes by filename', noremap = true})
+map('n', '<Leader>os', function() find_by_field.pick_field_value('title') end, {desc = 'Search by note title', noremap = true})
 map('n', '<Leader>ot', ':ObsidianTags<CR>', {desc = 'Search notes by tag', noremap = true})
 map('n', '<Leader>og', ':ObsidianSearch<CR>', {desc = 'Search notes by grep', noremap = true})
 map('n', '<Leader>oo', ':ObsidianOpen<CR>', {desc = 'Open in Obsidian Desktop', noremap = true})
