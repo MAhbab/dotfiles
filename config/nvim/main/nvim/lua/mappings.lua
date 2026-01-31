@@ -33,6 +33,7 @@ map('n', '<Leader>K', vim.diagnostic.open_float, { desc = 'Show diagnostics in f
 -- Obsidian
 local find_by_field = require('user.obsidian.find_by_field')
 local insert_link = require('user.obsidian.insert_link')
+local frontmatter = require('user.obsidian.frontmatter')
 
 map('n', '<Leader>of', function() find_by_field.pick_field_key() end, {desc = 'Search by frontmatter field', noremap = true})
 map('n', '<Leader>oi', function() insert_link.insert_note_link() end, {desc = 'Insert link', noremap = true})
@@ -51,6 +52,7 @@ end, { desc = 'Delete current file and close buffer' })
 map("i", "<C-Space>", function()
   require("cmp").complete()
 end, { noremap = true, silent = true })
+map('n', '<Leader>ou', function() frontmatter.set_field_value("status", {"todo", "done"}) end, {desc = 'Set status to todo/done', noremap = true})
 
 -- Bookmark Manager
 map('n', '<Leader>mm', ':BookmarksMark<CR>', {desc = 'Toggle bookmark on current file', noremap = true})
