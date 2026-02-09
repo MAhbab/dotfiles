@@ -15,12 +15,12 @@ map("n", "<leader>y", [[:let @+ = expand("%:p") . ":" . line(".")<CR>]], { norem
 
 -- Codeium
 vim.g.codeium_disable_bindings = 1
-map("i", "<C-g>", 'codeium#Accept()', { expr = true, silent = true })
-map("i", "<C-h>", 'codeium#AcceptNextWord()', { expr = true, silent = true })
-map("i", "<C-j>", 'codeium#AcceptNextLine()', { expr = true, silent = true })
-map("i", "<C-;>", '<Cmd>call codeium#CycleCompletions(1)<CR>', opts)
-map("i", "<C-,>", '<Cmd>call codeium#CycleCompletions(-1)<CR>', opts)
-map("i", "<C-x>", '<Cmd>call codeium#Clear()<CR>', opts)
+map("i", "<M-g>", 'codeium#Accept()', { expr = true, silent = true })
+map("i", "<M-h>", 'codeium#AcceptNextWord()', { expr = true, silent = true })
+map("i", "<M-j>", 'codeium#AcceptNextLine()', { expr = true, silent = true })
+map("i", "<M-n>", '<Cmd>call codeium#CycleCompletions(1)<CR>', opts)
+map("i", "<M-p>", '<Cmd>call codeium#CycleCompletions(-1)<CR>', opts)
+map("i", "<M-x>", '<Cmd>call codeium#Clear()<CR>', opts)
 
 -- LSP navigation bindings
 map('n', 'gd', vim.lsp.buf.definition, { noremap = true, silent = true, desc = 'Go to definition' })
