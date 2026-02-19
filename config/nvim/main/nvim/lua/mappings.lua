@@ -16,11 +16,12 @@ map("n", "<leader>y", [[:let @+ = expand("%:p") . ":" . line(".")<CR>]], { norem
 -- Codeium
 vim.g.codeium_disable_bindings = 1
 map("i", "<M-g>", 'codeium#Accept()', { expr = true, silent = true })
-map("i", "<M-h>", 'codeium#AcceptNextWord()', { expr = true, silent = true })
-map("i", "<M-j>", 'codeium#AcceptNextLine()', { expr = true, silent = true })
+map("i", "<M-j>", 'codeium#AcceptNextWord()', { expr = true, silent = true })
+map("i", "<M-h>", 'codeium#AcceptNextLine()', { expr = true, silent = true })
 map("i", "<M-n>", '<Cmd>call codeium#CycleCompletions(1)<CR>', opts)
 map("i", "<M-p>", '<Cmd>call codeium#CycleCompletions(-1)<CR>', opts)
 map("i", "<M-x>", '<Cmd>call codeium#Clear()<CR>', opts)
+map('i', '<M-t>', '<Cmd>call CodeiumToggle()<CR>', {desc = 'Toggle Codeium', noremap = true, silent = true})
 
 -- LSP navigation bindings
 map('n', 'gd', vim.lsp.buf.definition, { noremap = true, silent = true, desc = 'Go to definition' })
@@ -43,6 +44,7 @@ map('n', '<Leader>os', function() find_by_field.pick_field_value('title') end, {
 map('n', '<Leader>ot', ':ObsidianTags<CR>', {desc = 'Search notes by tag', noremap = true})
 map('n', '<Leader>og', ':ObsidianSearch<CR>', {desc = 'Search notes by grep', noremap = true})
 map('n', '<Leader>oo', ':ObsidianOpen<CR>', {desc = 'Open in Obsidian Desktop', noremap = true})
+map('n', '<Leader>ol', ':ObsidianFollowLink<CR>', {desc = 'Follow internal Obsidian link', noremap = true})
 map('n', '<leader>od', function()
   local filename = vim.fn.expand('%')
   vim.cmd('bd!')

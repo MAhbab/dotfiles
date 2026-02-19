@@ -46,5 +46,12 @@ return {
 	  config = function()
 	    require("strudel").setup()
 	  end,
-	}
+	},
+	{
+		"quarto-dev/quarto-nvim",
+		dependencies = {
+		"jmbuhr/otter.nvim",
+		"nvim-treesitter/nvim-treesitter",
+	},
+}
 }
