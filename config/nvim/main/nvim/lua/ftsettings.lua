@@ -11,7 +11,7 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = { "python", "sql", "rust" },
+  pattern = {"python", "sql", "rust", "quarto"},
   callback = function()
     vim.bo.tabstop = 4
     vim.bo.shiftwidth = 4
