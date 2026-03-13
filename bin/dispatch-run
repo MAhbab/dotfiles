@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+FILETYPE="$1"
+FILE="$2"
+
+case "$FILETYPE" in
+  python)
+    tmux split-window -h -c "#{pane_current_path}" \
+"zsh -ic 'activate-pyenv && ipython -i \"$FILE\"'"
+    ;;
+  sql)
+    run-sql "$FILE"
+    ;;
+  *)
+    echo "No runner configured for filetype: $FILETYPE"
+    ;;
+esac

@@ -76,3 +76,10 @@ map("n", "<leader>su", strudel.update, { desc = "Strudel Update" })
 map("n", "<leader>ss", strudel.stop, { desc = "Strudel Stop Playback" })
 map("n", "<leader>sb", strudel.set_buffer, { desc = "Strudel set current buffer" })
 map("n", "<leader>sx", strudel.execute, { desc = "Strudel set current buffer and update" })
+
+-- Tmux
+vim.keymap.set("n", "<leader>r", function()
+  local file = vim.fn.expand("%:p")
+  local ft = vim.bo.filetype
+  vim.fn.system("tmux run-shell 'dispatch-run " .. ft .. " " .. file .. "'")
+end)
