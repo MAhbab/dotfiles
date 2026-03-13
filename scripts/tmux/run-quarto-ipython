@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -e
+
+FILE="$1"
+
+BASENAME="${FILE%.qmd}"
+echo "$BASENAME"
+
+# Convert qmd -> ipynb
+quarto convert "$FILE"
+
+# Convert ipynb -> python
+jupyter nbconvert --to script "$BASENAME.ipynb"
+
+# nbconvert produces .txt sometimes
+if [ -f "$BASENAME.txt" ]; then
+  mv "$BASENAME.txt" "$BASENAME.py"
+fi
+
+mv "$BASENAME.py" "$BASENAME.py.tmp"
+rm -v "$BASENAME.ipynb"
+
+trap 'rm -f "$BASENAME.py.tmp"' EXIT
+
+# Run inside IPython
+ipython -i "$BASENAME.py.tmp"

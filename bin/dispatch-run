@@ -6,10 +6,16 @@ FILE="$2"
 case "$FILETYPE" in
   python)
     tmux split-window -h -c "#{pane_current_path}" \
-"zsh -ic 'activate-pyenv && ipython -i \"$FILE\"'"
+      "zsh -ic 'activate-pyenv && ipython -i \"$FILE\"'"
     ;;
   sql)
     run-sql "$FILE"
+    ;;
+  quarto)
+    SCRIPT="$DOTFILES/scripts/tmux/run-quarto-ipython"
+
+    tmux split-window -h -c "#{pane_current_path}" \
+      "zsh -ic 'activate-pyenv && $SCRIPT \"$FILE\"'"
     ;;
   *)
     echo "No runner configured for filetype: $FILETYPE"
