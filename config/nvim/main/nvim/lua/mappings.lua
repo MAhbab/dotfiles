@@ -83,3 +83,26 @@ vim.keymap.set("n", "<leader>r", function()
   local ft = vim.bo.filetype
   vim.fn.system("tmux run-shell 'dispatch-run " .. ft .. " " .. file .. "'")
 end)
+
+vim.keymap.set("v", "<leader>r", function()
+  local ft = vim.bo.filetype
+  local file = vim.fn.expand("%:p")
+
+  -- yank selection into register z
+  vim.cmd('normal! "zy')
+
+  local text = vim.fn.getreg("z")
+  local lines = vim.split(text, "\n")
+
+  local tmp = vim.fn.tempname()
+  vim.fn.writefile(lines, tmp)
+
+  -- call dispatch script
+  vim.fn.system(string.format(
+    "dispatch-run %s %s %s",
+    ft,
+    file,
+    tmp
+  ))
+end)
+

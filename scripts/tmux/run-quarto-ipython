@@ -24,3 +24,5 @@ trap 'rm -f "$BASENAME.py.tmp"' EXIT
 
 # Run inside IPython
 ipython -i "$BASENAME.py.tmp"
+echo -e "\nPress any key to exit..."
+read -r -n1

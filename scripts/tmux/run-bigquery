@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -e
+query_file="$1"
+active_file="$2"
+
+dbt_dir="$(dirname "$active_file")"
+js_dbt=false
+dir="$HOME/.cache/bq/csv/"
+query_dir="$HOME/.cache/bq/queries/"
+
+if [[ ! -d "$dir" ]]; then
+	mkdir -p "$dir"
+fi
+
+if [[ ! -d "$query_dir" ]]; then
+	mkdir -p "$query_dir"
+fi
+
+
+is_dbt=false
+while [[ "$dbt_dir" != "/" ]]; do
+  if [[ -f "$dbt_dir/dbt_project.yml" ]]; then
+    is_dbt=true
+    echo "dbt project detected"
+    break
+  fi
+  dbt_dir="$(dirname "$dbt_dir")"
+done
+query=$(cat "$query_file")
+if $is_dbt; then
+  echo "dbt project detected → compiling"
+  compiled_query=$(dbt compile -q --project-dir "$dbt_dir" --inline "$(echo "$query")")
+  query="$compiled_query"
+  if [[ -z "$query" ]]; then
+    echo "Compilation failed"
+    exit 1
+  fi
+fi
+
+unix=$(date +%s)
+destination="$dir$unix.csv"
+query_destination="$query_dir$unix.sql"
+
+echo "$query" | bq query --format=csv --n=1000 > $destination
+echo "$query" > "$query_destination"
+csvlens "$destination" --ignore-case --prompt "$destination"
+echo -e "\n\nSaved to $destination"
+echo -e "\nSaved query to $query_destination"
+echo -e "\nPress any key to exit..."
+read -r -n1
+

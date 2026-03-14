@@ -2,20 +2,28 @@
 
 FILETYPE="$1"
 FILE="$2"
+SELECTION_FILE="$3"
+
+if [[ -n "$SELECTION_FILE" ]]; then
+	REF_FILE="$SELECTION_FILE"
+	else
+	REF_FILE="$FILE"
+fi
 
 case "$FILETYPE" in
   python)
     tmux split-window -h -c "#{pane_current_path}" \
-      "zsh -ic 'activate-pyenv && ipython -i \"$FILE\"'"
-    ;;
-  sql)
-    run-sql "$FILE"
+      "zsh -ic 'activate-pyenv && ipython -i \"$REF_FILE\"'"
     ;;
   quarto)
     SCRIPT="$DOTFILES/scripts/tmux/run-quarto-ipython"
-
     tmux split-window -h -c "#{pane_current_path}" \
       "zsh -ic 'activate-pyenv && $SCRIPT \"$FILE\"'"
+    ;;
+  sql)
+    SCRIPT="$DOTFILES/scripts/tmux/run-bigquery"
+    tmux split-window -h -c "#{pane_current_path}" \
+      "zsh -ic 'activate-pyenv && $SCRIPT \"$REF_FILE\" \"$FILE\"'"
     ;;
   *)
     echo "No runner configured for filetype: $FILETYPE"
