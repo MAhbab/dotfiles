@@ -130,7 +130,7 @@ if ! command_exists fzf; then
     # Run fzf's install script for key bindings, completions, etc.
     "$(brew --prefix)/opt/fzf/install" --all || true
   elif [[ "${PACKAGE_MANAGER}" == "apt" ]]; then
-    sudo apt install -y fzf fzf-tmux # fzf-tmux provides extra features/integration
+    sudo apt install -y fzf
     echo "For fzf shell integration (key bindings, completions) on Linux, check your distribution's documentation or run 'fzf --no-bash --no-zsh --no-fish' for instructions."
   fi
 else
