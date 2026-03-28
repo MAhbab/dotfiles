@@ -17,6 +17,12 @@ This document provides context for the Gemini assistant to help it understand my
     - `ripgrep` (`rg`): Preferred over `grep` for recursive searching.
     - `jq`: Available for JSON processing.
     - `fzf`: Core tool for interactive filtering.
+    - `csvlens`: For viewing CSV files.
+    - `duckdb`: An in-process SQL OLAP database management system.
+    - `gemini-cli`: Command-line interface for Gemini.
+    - `gcloud-cli`: Command-line interface for Google Cloud.
+    - `pyenv`: Python version management tool.
+    - `rust`: Rust programming language and Cargo package manager.
 
 ---
 
