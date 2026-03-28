@@ -215,8 +215,10 @@ fi
 echo "Checking for pyenv virtual environment '${OMNI_ENV_NAME}'..."
 if ! pyenv virtualenvs | grep -q "${OMNI_ENV_NAME}"; then
   echo "Creating pyenv virtual environment '${OMNI_ENV_NAME}' for Python ${PYTHON_VERSION}..."
-  pyenv virtualenv "${PYTHON_VERSION}" "${OMNI_ENV_NAME}"
-  echo "pyenv virtual environment '${OMNI_ENV_NAME}' created."
+  if command_exists pyenv; then
+	  pyenv virtualenv "${PYTHON_VERSION}" "${OMNI_ENV_NAME}"
+	  echo "pyenv virtual environment '${OMNI_ENV_NAME}' created."
+  fi
 else
   echo "pyenv virtual environment '${OMNI_ENV_NAME}' already exists."
 fi
