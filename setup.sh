@@ -72,17 +72,25 @@ else
 fi
 
 # Set Zsh as default shell (if not already)
-if [[ "$(basename "$SHELL")" != "zsh" ]]; then
-  echo "Setting Zsh as default shell..."
-  if command_exists chsh; then
-    # chsh requires the user's password, so this might prompt the user
-    chsh -s "$(command -v zsh)"
-    echo "Zsh set as default shell. Please log out and back in for changes to take effect."
+echo "Checking if Zsh is the default login shell..."
+if command_exists zsh; then
+  CURRENT_LOGIN_SHELL="$(getent passwd "$(whoami)" | cut -d: -f7)"
+  ZSH_PATH="$(command -v zsh)"
+
+  if [[ "${CURRENT_LOGIN_SHELL}" != "${ZSH_PATH}" ]]; then
+    echo "Setting Zsh as default login shell..."
+    if command_exists chsh; then
+      # chsh requires the user's password, so this might prompt the user
+      chsh -s "${ZSH_PATH}"
+      echo "Zsh set as default login shell. Please log out and back in for changes to take effect."
+    else
+      echo "chsh command not found. Please set Zsh as your default login shell manually (e.g., 'chsh -s $(which zsh)')."
+    fi
   else
-    echo "chsh command not found. Please set Zsh as your default shell manually (e.g., 'chsh -s $(which zsh)')."
+    echo "Zsh is already the default login shell."
   fi
 else
-  echo "Zsh is already the default shell."
+  echo "Zsh is not installed. Skipping default shell configuration."
 fi
 
 # ---------------------------------------------------------------------------- #
@@ -114,9 +122,6 @@ install_package "tmux"
 install_package "bat"
 install_package "ripgrep"
 install_package "jq"
-install_package "duckdb"
-
-# fzf requires special handling for shell integration
 echo "Checking for fzf..."
 if ! command_exists fzf; then
   echo "Installing fzf..."
@@ -155,14 +160,10 @@ else
     fi
   else
     echo "pip3 is already installed."
-  fi
-fi
+
 
   fi
-fi
-
   fi
-fi
 
 # pyenv installation
 echo "Checking for pyenv..."
@@ -279,6 +280,6 @@ fi
 
 echo "Dotfiles setup script finished."
 
-# Use cargo to install csvlens
-echo "Installing csvlens..."
+curl https://install.duckdb.org | sh
 cargo install csvlens
+touch ~/.zshrc.local
