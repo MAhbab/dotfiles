@@ -204,8 +204,10 @@ OMNI_ENV_NAME="omni"
 echo "Checking for Python ${PYTHON_VERSION} via pyenv..."
 if ! pyenv versions | grep -q "${PYTHON_VERSION}"; then
   echo "Installing Python ${PYTHON_VERSION} via pyenv..."
-  pyenv install "${PYTHON_VERSION}"
-  echo "Python ${PYTHON_VERSION} installed."
+  if command_exists pyenv; then
+	  pyenv install "${PYTHON_VERSION}"
+	  echo "Python ${PYTHON_VERSION} installed."
+  fi
 else
   echo "Python ${PYTHON_VERSION} is already installed via pyenv."
 fi
