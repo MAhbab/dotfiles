@@ -282,4 +282,10 @@ echo "Dotfiles setup script finished."
 
 curl https://install.duckdb.org | sh
 cargo install csvlens
+
+echo "Creating ~/.zshrc.local..."
 touch ~/.zshrc.local
+
+echo "Dotfiles setup script finished."
+echo "Copy .zshrc.TEMPLATE to home directory with following command:"
+echo "cp ~/.zshrc.TEMPLATE ~/.zshrc"
