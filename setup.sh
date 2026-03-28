@@ -109,7 +109,7 @@ install_package() {
 }
 
 install_package "git"
-install_package "nvim" "neovim"
+install_package "neovim"
 install_package "tmux"
 install_package "bat"
 install_package "rg" "ripgrep"
