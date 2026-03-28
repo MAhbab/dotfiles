@@ -167,7 +167,7 @@ else
 
 # pyenv installation
 echo "Checking for pyenv..."
-if ! command_exists pyenv; then
+if ! command_exists pyenv && [ ! -d "${HOME}/.pyenv" ]; then
   echo "Installing pyenv and dependencies..."
   if [[ "${PACKAGE_MANAGER}" == "brew" ]]; then
     brew install pyenv
