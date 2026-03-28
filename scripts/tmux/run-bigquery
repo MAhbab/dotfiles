@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
-set -e
 query_file="$1"
 active_file="$2"
 
 dbt_dir="$(dirname "$active_file")"
-js_dbt=false
 dir="$HOME/.cache/bq/csv/"
 query_dir="$HOME/.cache/bq/queries/"
 
@@ -31,6 +29,7 @@ if $is_dbt; then
   echo "dbt project detected → compiling"
   compiled_query=$(dbt compile -q --project-dir "$dbt_dir" --inline "$(echo "$query")")
   query="$compiled_query"
+  echo "$query"
   if [[ -z "$query" ]]; then
     echo "Compilation failed"
     exit 1
@@ -41,9 +40,46 @@ unix=$(date +%s)
 destination="$dir$unix.csv"
 query_destination="$query_dir$unix.sql"
 
-echo "$query" | bq query --format=csv --n=1000 > $destination
+error_file=$(mktemp)
+tmp_query=$(mktemp)
+printf "%s" "$query" > "$tmp_query"
+
+if ! bq query \
+    --quiet \
+    --nouse_legacy_sql \
+    --format=csv \
+    --n=1000 \
+    < "$tmp_query" \
+    > "$destination" 2> "$error_file"
+then
+    echo -e "\n❌ BigQuery failed:\n"
+
+    if [[ -s "$error_file" ]]; then
+        cat "$error_file"
+    else
+        echo "(no stderr output — rerunning for visibility)"
+        echo
+
+        bq query \
+            --nouse_legacy_sql \
+            --format=pretty \
+            --n=10 \
+            < "$tmp_query"
+    fi
+
+    echo -e "\nPress any key to exit..."
+    read -r -n1
+
+    rm -f "$error_file" "$tmp_query"
+    exit 1
+fi
+
+rm -f "$error_file" "$tmp_query"
+
+
 echo "$query" > "$query_destination"
 csvlens "$destination" --ignore-case --prompt "$destination"
+echo "$destination"
 echo -e "\n\nSaved to $destination"
 echo -e "\nSaved query to $query_destination"
 echo -e "\nPress any key to exit..."
