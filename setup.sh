@@ -112,9 +112,8 @@ install_package "git"
 install_package "neovim"
 install_package "tmux"
 install_package "bat"
-install_package "rg" "ripgrep"
+install_package "ripgrep"
 install_package "jq"
-install_package "csvlens"
 install_package "duckdb"
 
 # fzf requires special handling for shell integration
@@ -279,3 +278,7 @@ else
 fi
 
 echo "Dotfiles setup script finished."
+
+# Use cargo to install csvlens
+echo "Installing csvlens..."
+cargo install csvlens
