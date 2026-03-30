@@ -8,6 +8,9 @@ alias rcd="replay_cd"
 # neovim configs
 alias vim='XDG_CONFIG_HOME=~/dotfiles/config/nvim/main nvim'
 
+# tmux
+alias tmux="tmux -f ~/dotfiles/config/tmux/tmux.conf"
+
 # macOS-like clipboard commands for Linux (Ubuntu)
 if [[ "$(uname)" == "Linux" ]]; then
   if command -v xclip &> /dev/null; then
