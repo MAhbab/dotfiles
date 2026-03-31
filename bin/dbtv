@@ -1,0 +1,219 @@
+#!/opt/homebrew/bin/bash
+
+set -euo pipefail
+
+dbt_dir="$(pwd)"
+is_dbt=false
+while [[ "$dbt_dir" != "/" ]]; do
+  if [[ -f "$dbt_dir/dbt_project.yml" ]]; then
+    is_dbt=true
+    echo "dbt project detected"
+    break
+  fi
+  dbt_dir="$(dirname "$dbt_dir")"
+done
+
+if ! $is_dbt; then
+  echo "No dbt project detected"
+  exit 1
+fi
+
+MANIFEST="$dbt_dir/target/manifest.json"
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ASCII_RENDERER="$DOTFILES_DIR/scripts/graph_ascii.py"  # adjust path if needed
+
+require() {
+  command -v "$1" >/dev/null 2>&1 || {
+    echo "Error: $1 is required"
+    exit 1
+  }
+}
+
+require jq
+require fzf
+require python3
+
+# --- node helpers ---
+
+pick_node() {
+  jq -r '
+    .nodes
+    | to_entries[]
+    | "\(.value.name)\t\(.key)"
+  ' "$MANIFEST" | fzf --with-nth=1 | cut -f2
+}
+
+get_name() {
+  jq -r --arg id "$1" '.nodes[$id].name' "$MANIFEST"
+}
+
+get_path() {
+  jq -r --arg id "$1" '.nodes[$id].original_file_path' "$MANIFEST"
+}
+
+get_parents() {
+  jq -r --arg id "$1" '
+    .nodes[$id].depends_on.nodes[]?
+  ' "$MANIFEST"
+}
+
+get_children() {
+  jq -r --arg id "$1" '
+    .nodes
+    | to_entries[]
+    | select(.value.depends_on.nodes[]? == $id)
+    | .key
+  ' "$MANIFEST"
+}
+
+get_raw_code() {
+  jq -r --arg id "$1" '.nodes[$id].original_file_path' "$MANIFEST"
+}
+
+get_config() {
+  jq -r --arg id "$1" '.nodes[$id].config' "$MANIFEST"
+}
+
+get_columns() {
+  jq '.nodes."model.fred.can_fred__observations".columns[] | "\(.name): \(.description)"' "$MANIFEST"
+
+}
+
+get_compiled_code_path() {
+  jq -r --arg id "$1" '.nodes[$id].compiled_path' "$MANIFEST"
+}
+
+# --- edge generator ---
+
+generate_edges() {
+  local root="$1"
+  local depth="${2:-1}"
+
+  declare -A visited
+  frontier=("$root")
+
+  for ((d=0; d<depth; d++)); do
+    next_frontier=()
+
+    for node in "${frontier[@]}"; do
+      visited["$node"]=1
+      node_name=$(get_name "$node")
+
+      # parents
+      while IFS= read -r p; do
+        [[ -z "$p" ]] && continue
+        p_name=$(get_name "$p")
+
+        echo "$p_name -> $node_name"
+
+        if [[ -z "${visited["$p"]+x}" ]]; then
+          next_frontier+=("$p")
+        fi
+      done < <(get_parents "$node")
+
+      # children
+      while IFS= read -r c; do
+        [[ -z "$c" ]] && continue
+        c_name=$(get_name "$c")
+
+        echo "$node_name -> $c_name"
+
+        if [[ -z "${visited["$c"]+x}" ]]; then
+          next_frontier+=("$c")
+        fi
+      done < <(get_children "$node")
+
+    done
+
+    frontier=("${next_frontier[@]}")
+  done
+}
+
+# --- ascii graph ---
+
+render_ascii_graph() {
+  local node="$1"
+  local depth="$2"
+
+  generate_edges "$node" "$depth" \
+    | python3 "$ASCII_RENDERER"
+}
+
+# --- main loop ---
+
+NODE_ID=$(pick_node)
+[[ -z "$NODE_ID" ]] && exit 0
+
+while true; do
+  NAME=$(get_name "$NODE_ID")
+
+  ACTION=$(printf "%s\n" \
+    "parents" \
+    "children" \
+    "open" \
+    "graph depth=1" \
+    "graph depth=2" \
+    "quit" \
+    "select" \
+    "columns" \
+    "raw code" \
+    "compiled code" \
+    "config" \
+    | fzf --prompt="$NAME > ")
+
+  case "$ACTION" in
+    parents)
+      NEXT=$(get_parents "$NODE_ID" | fzf)
+      [[ -n "$NEXT" ]] && NODE_ID="$NEXT"
+      ;;
+
+    children)
+      NEXT=$(get_children "$NODE_ID" | fzf)
+      [[ -n "$NEXT" ]] && NODE_ID="$NEXT"
+      ;;
+
+    open)
+      vim "$(get_path "$NODE_ID")"
+      ;;
+
+    "graph depth=1")
+      render_ascii_graph "$NODE_ID" 1
+      echo ""
+      echo ""
+      read -p "Press any key to continue"
+      ;;
+
+    "graph depth=2")
+      render_ascii_graph "$NODE_ID" 2
+      echo ""
+      echo ""
+      read -p "Press any key to continue"
+      ;;
+
+    select)
+      NODE_ID=$(pick_node)
+      ;;
+
+    columns)
+      get_columns "$NODE_ID"
+      read -p "Press any key to continue"
+      ;;
+
+    "raw code")
+      bat -pp -l sql $(get_raw_code "$NODE_ID")
+      read -p "Press any key to continue"
+      ;;
+
+    "compiled code")
+      get_compiled_code_path "$NODE_ID"
+      ;;
+
+    config)
+      get_config "$NODE_ID"
+      ;;
+
+    quit)
+      break
+      ;;
+  esac
+done
